@@ -1,0 +1,48 @@
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'org.spongepowered.mixin'
+
+version = '1.0.0'
+group = 'io.github.tox1cozz.forgenetworkfix'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+
+minecraft {
+    version = "1.12.2-14.23.5.2847"
+    runDir = "run"
+    mappings = "stable_39"
+}
+
+repositories {
+    maven {
+        url "https://maven.cleanroommc.com"
+    }
+}
+
+dependencies {
+    implementation 'zone.rong:mixinbooter:7.0'
+}
+
+sourceSets {
+    main {
+        ext.refMap = 'mixin.forgenetworkfix.refmap.json'
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    manifest {
+        attributes 'Created-By': 'tox1cozZ (https://t.me/agrava1ne)'
+        attributes 'FMLCorePlugin': 'io.github.tox1cozz.forgenetworkfix.asm.CoremodPlugin'
+    }
+}

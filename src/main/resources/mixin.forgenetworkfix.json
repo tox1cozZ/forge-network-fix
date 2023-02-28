@@ -1,0 +1,15 @@
+{
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_8",
+  "required": true,
+  "target": "@env(DEFAULT)",
+  "package": "io.github.tox1cozz.forgenetworkfix.asm.mixin",
+  "refmap": "mixin.forgenetworkfix.refmap.json",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "server": [
+    "MixinFMLIndexedMessageToMessageCodec",
+    "MixinSimpleNetworkWrapper"
+  ]
+}
