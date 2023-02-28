@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @Mixin(value = FMLIndexedMessageToMessageCodec.class, remap = false)
-public class MixinFMLIndexedMessageToMessageCodec<A> implements TargetableMessageCodec {
+public class MixinFMLIndexedMessageToMessageCodec implements TargetableMessageCodec {
 
     private static final Set<String> FML_CHANNELS = Sets.newHashSet("FML", "FML|HS", "REGISTER", "UNREGISTER");
 
