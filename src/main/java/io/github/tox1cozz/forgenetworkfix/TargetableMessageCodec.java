@@ -1,8 +1,11 @@
 package io.github.tox1cozz.forgenetworkfix;
 
-import gnu.trove.set.TByteSet;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.relauncher.Side;
 
-public interface TargetableMessageCodec {
+public interface TargetableMessageCodec<A> {
 
-    TByteSet getIllegalSideMessages();
+    void setTargetSide(Class<? extends IMessage> type, Side side);
+
+    boolean canDecode(Class<? extends A> type, Side side);
 }

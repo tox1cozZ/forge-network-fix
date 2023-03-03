@@ -1,39 +1,49 @@
 package io.github.tox1cozz.forgenetworkfix.asm.mixin;
 
-import com.google.common.collect.Sets;
 import cpw.mods.fml.common.network.FMLIndexedMessageToMessageCodec;
 import cpw.mods.fml.common.network.internal.FMLProxyPacket;
-import gnu.trove.set.TByteSet;
-import gnu.trove.set.hash.TByteHashSet;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.relauncher.Side;
+import gnu.trove.map.TObjectByteMap;
+import gnu.trove.map.hash.TObjectByteHashMap;
 import io.github.tox1cozz.forgenetworkfix.TargetableMessageCodec;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.List;
-import java.util.Set;
 
 @Mixin(value = FMLIndexedMessageToMessageCodec.class, remap = false)
-public class MixinFMLIndexedMessageToMessageCodec implements TargetableMessageCodec {
+public class MixinFMLIndexedMessageToMessageCodec<A> implements TargetableMessageCodec<A> {
 
-    private static final Set<String> FML_CHANNELS = Sets.newHashSet("FML", "FML|HS", "REGISTER", "UNREGISTER");
+    protected final TObjectByteMap<Class<? extends IMessage>> targetSides = new TObjectByteHashMap<>();
 
-    private final TByteSet illegalSideMessages = new TByteHashSet();
-
-    @Redirect(method = "decode", at = @At(value = "INVOKE", target = "Lio/netty/buffer/ByteBuf;readByte()B"))
-    private byte decode(ByteBuf payload, ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) {
-        byte discriminator = payload.readByte();
-        String channel = msg.channel();
-        if (illegalSideMessages.contains(discriminator) && !FML_CHANNELS.contains(channel)) {
-            throw new IllegalStateException("Undefined message side for discriminator " + discriminator + " in channel " + channel);
+    @Redirect(method = "decode",
+              at = @At(value = "INVOKE", target = "Ljava/lang/Class;newInstance()Ljava/lang/Object;"))
+    private A decode(Class<? extends A> messageType, ChannelHandlerContext ctx, FMLProxyPacket packet, List<Object> out) throws Exception {
+        if (!canDecode(messageType, packet.getTarget())) {
+            throw new IllegalStateException("Undefined message side for type '" + messageType.getName() + "' in channel " + packet.channel());
         }
-        return discriminator;
+        return messageType.newInstance();
     }
 
     @Override
-    public TByteSet getIllegalSideMessages() {
-        return illegalSideMessages;
+    public void setTargetSide(Class<? extends IMessage> type, Side side) {
+        byte mask = toMask(side);
+        if (targetSides.containsKey(type)) {
+            targetSides.put(type, (byte)(targetSides.get(type) | mask));
+        } else {
+            targetSides.put(type, mask);
+        }
+    }
+
+    @Override
+    public boolean canDecode(Class<? extends A> type, Side side) {
+        return true;
+    }
+
+    protected final byte toMask(Side side) {
+        return (byte)(1 << side.ordinal());
     }
 }
