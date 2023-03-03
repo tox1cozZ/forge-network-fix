@@ -22,7 +22,6 @@ public class MixinFMLIndexedMessageToMessageCodec<A> implements TargetableMessag
     @Redirect(method = "decode",
               at = @At(value = "INVOKE", target = "Ljava/lang/Class;newInstance()Ljava/lang/Object;"))
     private A decode(Class<? extends A> messageType, ChannelHandlerContext ctx, FMLProxyPacket packet, List<Object> out) throws Exception {
-        byte targetMask = targetSides.get(messageType);
         if (!canDecode(messageType, packet.getTarget())) {
             throw new IllegalStateException("Undefined message side for type '" + messageType.getName() + "' in channel " + packet.channel());
         }
